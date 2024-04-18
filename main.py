@@ -10,19 +10,7 @@ async def fetch(req):
     if req.method == "OPTIONS":
         return web.Response(body="", headers={'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*'}, status=204)
 
-    body = {}
-    try:
-        body = await req.json()
-    except:
-        url_params = req.url.query
-        body = {
-            "messages": [{"role": "user", "content": url_params.get('q', 'hello')}],
-            "model": "command-r",
-            "temperature": 0.5,
-            "presence_penalty": 0,
-            "frequency_penalty": 0,
-            "stream": True
-        }
+    body = await req.json()
 
     data = {"chat_history": []}
     try:
@@ -57,41 +45,6 @@ async def fetch(req):
             if resp.status != 200:
                 return resp
 
-            created = int(time.time())
-
-            if not data["stream"]:
-                try:
-                    ddd = await resp.json()
-                except Exception as e:
-                    ddd = {"error": str(e)}
-                response_data = {
-                    "id": "chatcmpl-QXlha2FBbmROaXhpZUFyZUF3ZXNvbWUK",
-                    "object": "chat.completion",
-                    "created": created,
-                    "model": data["model"],
-                    "choices": [
-                        {
-                            "index": 0,
-                            "delta": {
-                                "role": "assistant",
-                                "content": ddd.get("text", ddd.get("error"))
-                            },
-                            "logprobs": None,
-                            "finish_reason": "stop"
-                        }
-                    ],
-                    "usage": {
-                        "prompt_tokens": 0,
-                        "completion_tokens": 0,
-                        "total_tokens": 0
-                    },
-                    "system_fingerprint": None
-                }
-                headers = {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Headers': '*'
-                }
-                return web.json_response(response_data, headers=headers, status=resp.status)
 
             async def stream_response(resp):
                 writer = web.StreamResponse()
@@ -116,8 +69,8 @@ async def fetch(req):
                         continue
 
                     wrapped_chunk = {
-                        "id": "chatcmpl-QXlha2FBbmROaXhpZUFyZUF3ZXNvbWUK",
-                        "object": "chat.completion",
+                        "id": "chatcmpl-9FLdP4Hj7KJ2BYYeskHyLALXnLzrY",
+                        "object": "chat.completion.chunk",
                         "created": int(time.time()),
                         "model": data["model"],
                         "choices": [
@@ -155,4 +108,4 @@ app = web.Application()
 app.router.add_route("*", "/v1/chat/completions", onRequest)
 
 if __name__ == '__main__':
-    web.run_app(app, host='0.0.0.0', port=3030)
+    web.run_app(app, host='127.0.0.1', port=3030)
